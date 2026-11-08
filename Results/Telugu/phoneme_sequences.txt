@@ -1,0 +1,25 @@
+T1
+TEXT: న్యూరోఫార్మకోలాజికల్ పరిశోధనలో నూతన ఔషధాల ప్రభావాన్ని విశ్లేషించారు.
+NORMALISED: న్యూరోఫార్మకోలాజికల్ పరిశోధనలో నూతన ఔషధాల ప్రభావాన్ని విశ్లేషించారు.
+PHONES: N Y UU R OO PH AA R M A K OO L AA J I K A L P A R I SH OO DH A N A L OO N UU T A N A AU SS A DH AA L A P R A BH AA V AA N N I V I SH L EE SS I NY C AA R U
+
+T2a
+TEXT: తాడుపై అతని పట్టు చాలా బలంగా ఉంది.
+NORMALISED: తాడుపై అతని పట్టు చాలా బలంగా ఉంది.
+PHONES: T AA DD U P AI A T A N I P A TT TT U C AA L AA B A L A NG G AA U N D I
+
+T2b
+TEXT: ఆమె పట్టుచీరను ధరించి వేడుకకు వచ్చింది.
+NORMALISED: ఆమె పట్టుచీరను ధరించి వేడుకకు వచ్చింది.
+PHONES: AA M E P A TT TT U C II R A N U DH A R I NY C I V EE DD U K A K U V A C C I N D I
+
+T3
+TEXT: పులి అడవిలో నిశ్శబ్దంగా నడిచింది.
+NORMALISED: పులి అడవిలో నిశ్శబ్దంగా నడిచింది.
+PHONES: P U L I A DD A V I L OO N I SH SH A B D A NG G AA N A DD I C I N D I
+
+T4
+TEXT: ఈ సమావేశం 2026 నవంబర్ 12వ తేదీ ఉదయం 10:45 గంటలకు ప్రారంభమవుతుంది, సమయానికి సిద్ధంగా ఉంచండి.
+NORMALISED: ఈ సమావేశం రెండు వేల ఇరవై ఆరు నవంబర్ పన్నెండవ తేదీ ఉదయం పది నలభై ఐదు గంటలకు ప్రారంభమవుతుంది, సమయానికి సిద్ధంగా ఉంచండి.
+PHONES: II S A M AA V EE SH A M R E NN DD U V EE L A I R A V AI AA R U N A V A M B A R P A N N E NN DD A V A T EE D II U D A Y A M P A D I N A L A BH AI AI D U G A NN TT A L A K U P R AA R A M BH A M A V U T U N D I sp S A M A Y AA N I K I S I D DH A NG G AA U NY C A NN DD I
+
