@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Large data and training artifacts (keep out of GitHub)
+raw_data/
+preprocessed_data/
+output/
+*.wav
+*.zip
+*.pth
+*.pt
+*.pth.tar
+*.ckpt
+
+# Allow a small inference-only checkpoint if you add one (under 100 MB)
+# !checkpoints/*.pth.tar
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

@@ -1,0 +1,18 @@
+# Versions used in the Colab runs are in the comments; unpinned so pip can resolve them.
+# Montreal Forced Aligner 3.4.3 is installed separately via conda-forge (micromamba).
+
+torch          # tested with 2.11
+numpy          # tested with 2.4.6
+scipy          # tested with 1.16.3
+scikit-learn   # tested with 1.6.1
+librosa        # tested with 0.11.0
+soundfile      # tested with 0.14.0
+pyworld        # tested with 0.3.5
+matplotlib     # tested with 3.10.0
+g2p_en
+num2words
+tgt
+pypinyin
+unidecode
+inflect
+PyYAML

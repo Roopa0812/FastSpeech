@@ -1,0 +1,141 @@
+diff --git a/audio/audio_processing.py b/audio/audio_processing.py
+index 07bef28..8a5f82b 100644
+--- a/audio/audio_processing.py
++++ b/audio/audio_processing.py
+@@ -54,7 +54,7 @@ def window_sumsquare(
+     # Compute the squared window at the desired length
+     win_sq = get_window(window, win_length, fftbins=True)
+     win_sq = librosa_util.normalize(win_sq, norm=norm) ** 2
+-    win_sq = librosa_util.pad_center(win_sq, n_fft)
++    win_sq = librosa_util.pad_center(win_sq, size=n_fft)
+ 
+     # Fill the envelope
+     for i in range(n_frames):
+diff --git a/audio/stft.py b/audio/stft.py
+index fcce29b..ef38cf1 100644
+--- a/audio/stft.py
++++ b/audio/stft.py
+@@ -39,7 +39,7 @@ class STFT(torch.nn.Module):
+             assert filter_length >= win_length
+             # get window and zero center pad it to filter_length
+             fft_window = get_window(window, win_length, fftbins=True)
+-            fft_window = pad_center(fft_window, filter_length)
++            fft_window = pad_center(fft_window, size=filter_length)
+             fft_window = torch.from_numpy(fft_window).float()
+ 
+             # window the bases
+@@ -65,8 +65,8 @@ class STFT(torch.nn.Module):
+         input_data = input_data.squeeze(1)
+ 
+         forward_transform = F.conv1d(
+-            input_data.cuda(),
+-            torch.autograd.Variable(self.forward_basis, requires_grad=False).cuda(),
++            input_data.to(self.forward_basis.device),
++            torch.autograd.Variable(self.forward_basis, requires_grad=False),
+             stride=self.hop_length,
+             padding=0,
+         ).cpu()
+@@ -142,9 +142,7 @@ class TacotronSTFT(torch.nn.Module):
+         self.n_mel_channels = n_mel_channels
+         self.sampling_rate = sampling_rate
+         self.stft_fn = STFT(filter_length, hop_length, win_length)
+-        mel_basis = librosa_mel_fn(
+-            sampling_rate, filter_length, n_mel_channels, mel_fmin, mel_fmax
+-        )
++        mel_basis = librosa_mel_fn(sr=sampling_rate, n_fft=filter_length, n_mels=n_mel_channels, fmin=mel_fmin, fmax=mel_fmax)
+         mel_basis = torch.from_numpy(mel_basis).float()
+         self.register_buffer("mel_basis", mel_basis)
+ 
+diff --git a/preprocessor/preprocessor.py b/preprocessor/preprocessor.py
+index 0c2c118..2f77750 100644
+--- a/preprocessor/preprocessor.py
++++ b/preprocessor/preprocessor.py
+@@ -12,6 +12,9 @@ from tqdm import tqdm
+ 
+ import audio as Audio
+ 
++_SPLIT = '/content/FastSpeech2/split_val_utts.txt'
++VAL_SET = set(open(_SPLIT).read().split()) if os.path.exists(_SPLIT) else set()
++
+ 
+ class Preprocessor:
+     def __init__(self, config):
+@@ -74,18 +77,19 @@ class Preprocessor:
+                 tg_path = os.path.join(
+                     self.out_dir, "TextGrid", speaker, "{}.TextGrid".format(basename)
+                 )
+-                if os.path.exists(tg_path):
+-                    ret = self.process_utterance(speaker, basename)
+-                    if ret is None:
+-                        continue
+-                    else:
+-                        info, pitch, energy, n = ret
+-                    out.append(info)
+-
+-                if len(pitch) > 0:
+-                    pitch_scaler.partial_fit(pitch.reshape((-1, 1)))
+-                if len(energy) > 0:
+-                    energy_scaler.partial_fit(energy.reshape((-1, 1)))
++                if not os.path.exists(tg_path):
++                    continue
++                ret = self.process_utterance(speaker, basename)
++                if ret is None:
++                    continue
++                info, pitch, energy, n = ret
++                out.append(info)
++
++                if basename not in VAL_SET:  # normalisation stats from training data only
++                    if len(pitch) > 0:
++                        pitch_scaler.partial_fit(pitch.reshape((-1, 1)))
++                    if len(energy) > 0:
++                        energy_scaler.partial_fit(energy.reshape((-1, 1)))
+ 
+                 n_frames += n
+ 
+@@ -144,10 +148,10 @@ class Preprocessor:
+ 
+         # Write metadata
+         with open(os.path.join(self.out_dir, "train.txt"), "w", encoding="utf-8") as f:
+-            for m in out[self.val_size :]:
++            for m in [x for x in out if x.split('|')[0] not in VAL_SET]:
+                 f.write(m + "\n")
+         with open(os.path.join(self.out_dir, "val.txt"), "w", encoding="utf-8") as f:
+-            for m in out[: self.val_size]:
++            for m in [x for x in out if x.split('|')[0] in VAL_SET]:
+                 f.write(m + "\n")
+ 
+         return out
+@@ -259,7 +263,7 @@ class Preprocessor:
+         end_time = 0
+         end_idx = 0
+         for t in tier._objects:
+-            s, e, p = t.start_time, t.end_time, t.text
++            s, e, p = t.start_time, t.end_time, (t.text if t.text.strip() else "sp")
+ 
+             # Trim leading silences
+             if phones == []:
+diff --git a/utils/model.py b/utils/model.py
+index 45e1f41..95891bc 100644
+--- a/utils/model.py
++++ b/utils/model.py
+@@ -17,7 +17,7 @@ def get_model(args, configs, device, train=False):
+             train_config["path"]["ckpt_path"],
+             "{}.pth.tar".format(args.restore_step),
+         )
+-        ckpt = torch.load(ckpt_path)
++        ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+         model.load_state_dict(ckpt["model"])
+ 
+     if train:
+@@ -60,9 +60,9 @@ def get_vocoder(config, device):
+         config = hifigan.AttrDict(config)
+         vocoder = hifigan.Generator(config)
+         if speaker == "LJSpeech":
+-            ckpt = torch.load("hifigan/generator_LJSpeech.pth.tar")
++            ckpt = torch.load("hifigan/generator_LJSpeech.pth.tar", map_location="cpu", weights_only=False)
+         elif speaker == "universal":
+-            ckpt = torch.load("hifigan/generator_universal.pth.tar")
++            ckpt = torch.load("hifigan/generator_universal.pth.tar", map_location="cpu", weights_only=False)
+         vocoder.load_state_dict(ckpt["generator"])
+         vocoder.eval()
+         vocoder.remove_weight_norm()

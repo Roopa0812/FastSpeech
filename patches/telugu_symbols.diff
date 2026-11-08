@@ -1,0 +1,15 @@
+diff --git a/text/symbols.py b/text/symbols.py
+index ae99253..54da4ca 100644
+--- a/text/symbols.py
++++ b/text/symbols.py
+@@ -14,8 +14,8 @@ _letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+ _silences = ["@sp", "@spn", "@sil"]
+ 
+ # Prepend "@" to ARPAbet symbols to ensure uniqueness (some are the same as uppercase letters):
+-_arpabet = ["@" + s for s in cmudict.valid_symbols]
+-_pinyin = ["@" + s for s in pinyin.valid_symbols]
++_arpabet = ['@A', '@AA', '@I', '@II', '@U', '@UU', '@E', '@EE', '@AI', '@O', '@OO', '@AU', '@K', '@KH', '@G', '@GH', '@NG', '@C', '@CH', '@J', '@JH', '@NY', '@TT', '@TTH', '@DD', '@DDH', '@NN', '@T', '@TH', '@D', '@DH', '@N', '@P', '@PH', '@B', '@BH', '@M', '@Y', '@R', '@RR', '@L', '@LL', '@V', '@SH', '@SS', '@S', '@H']  # Telugu phone set (replaces ARPAbet)
++_pinyin = []
+ 
+ # Export all symbols:
+ symbols = (
